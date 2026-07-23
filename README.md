@@ -1,4 +1,4 @@
-![alt text](cicdefense.png)
+![alt text](cicdefense-updated.png)
 
 # CI/CDefense
 
