@@ -1,0 +1,26 @@
+# Downloaded providers/modules that have to remain machine-local, huge directory, never commit
+**/.terraform/*
+# state files contain secrets in plaintext - NEVER commit 
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+# variable files may contain secrets or IDs
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+# CLI config that can hold creds
+.terraformrc
+terraform.rc
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.pem
+*.key
+id_rsa
+id_ed25519
+# Saved plan files - can contain sensitive values
+*.tfplan

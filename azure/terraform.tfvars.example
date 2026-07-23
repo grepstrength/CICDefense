@@ -1,0 +1,5 @@
+# Copy this file to terraform.tfvars and fill in your real values
+# terraform.tfvars is gitignored, so your real subscription ID never gets committed
+subscription_id = "<your-azure-subscription-guid-here>"
+location        = "eastus2"
+admin_username  = "<12+ chars, upper & lower case, number, speshul symbol>"
