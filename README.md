@@ -213,7 +213,7 @@ CICDefense/
 
 ## Troubleshooting
 
-**plan prompts for a variable.** A required variable has no value. Check that `terraform.tfvars` exists and is filled in.
+**terraform plan prompts for a variable.** A required variable has no value. Check that `terraform.tfvars` exists and is filled in.
 
 **Subscription ID is not known by Azure CLI.** The GUID in `terraform.tfvars` does not match your logged-in session. Run `az account list --all --output table` and compare.
 
@@ -246,4 +246,4 @@ $env:TF_LOG = ""
 
 ## License
 
-See LICENSE.
+MIT. 
