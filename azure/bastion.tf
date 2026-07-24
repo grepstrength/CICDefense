@@ -1,3 +1,6 @@
+// --- NOTE ---
+// Bastion hosts incur costs just by existing. If you want to keep the lab up over an extended period, consider destroying this resource when not actively in use and rebuild when needed
+
 resource "azurerm_public_ip" "bastion" {
   name                = "${var.project_name}-bastion-pip"
   location            = azurerm_resource_group.main.location

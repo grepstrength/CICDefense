@@ -95,5 +95,6 @@ resource "azurerm_linux_virtual_machine" "kali" {
     product   = "kali-linux"
     publisher = "kali-linux"
   }
-  depends_on = [azurerm_marketplace_agreement.kali]
+  depends_on = [azurerm_marketplace_agreement.kali] // this is an explicit dependency 
+  // use implicit dependencies whenever possible, but readh for depends_on when a real dependency exists that Terraform can't infer 
 }
