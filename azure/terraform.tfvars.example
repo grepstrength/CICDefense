@@ -1,5 +1,4 @@
-# Copy this file to terraform.tfvars and fill in your real values
-# terraform.tfvars is gitignored, so your real subscription ID never gets committed
+#Copy this file to terraform.tfvars and fill in your real values. terraform.tfvars is gitignored, so your real subscription ID never gets committed
 subscription_id = "<your-azure-subscription-guid-here>"
 location        = "eastus2"
-admin_username  = "<12+ chars, upper & lower case, number, speshul symbol>"
+admin_password  = "<12+ chars, upper & lower case, number, speshul symbol>" #this is fine for a lab, but real CI/CD pipeline work should never commit a password in cleartext on disk 
