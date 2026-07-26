@@ -21,7 +21,7 @@ Network posture:
 - VMs can reach each other
 - VMs can reach the internet (egress allowed for package and model pulls)
 - Nothing on the internet can reach the VMs
-- Operator access is via Azure Bastion / GCP Identity-Aware Proxy only
+- Operator access is via Azure Bastion 
 
 ## What Gets Built
 
@@ -34,19 +34,16 @@ Azure (18 resources):
 - 3 virtual machines, plus a marketplace agreement for Kali
 - 3 VM extensions that install desktops and tooling
 
-GCP: *STILL IN ACTIVE DEVELOPMENT*
-
 ## Prerequisites
 
 - Terraform CLI 1.9 or newer
 - Azure CLI
 - An Azure subscription with billing enabled
-- gcloud CLI, for the GCP lab
 - Git
 
 Optional but recommended: VS Code with the HashiCorp Terraform extension.
 
-## Quick Start (Azure)
+## Quick Start
 
 ### 1. Authenticate
 
@@ -108,13 +105,9 @@ terraform destroy
 
 Do this at the end of every session.
 
-## Quick Start (GCP)
-
-*STILL IN ACTIVE DEVELOPMENT*
-
 ## Installed Tooling
 
-Provisioning scripts live in `azure/scripts/` and run automatically via VM extensions.
+Provisioning scripts live in `scripts/` and run automatically via VM extensions.
 
 All nodes:
 
@@ -185,32 +178,6 @@ Please keep in mind that this is a lab. I deliberately chose convenience over ha
 
 Never commit `terraform.tfvars` or `.tfstate` files. Both are gitignored at the repo root.
 
-## Repository Layout
-
-```
-CICDefense/
-├── .gitignore
-├── LICENSE
-├── README.md
-├── azure/
-│   ├── versions.tf
-│   ├── providers.tf
-│   ├── variables.tf
-│   ├── terraform.tfvars.example
-│   ├── network.tf
-│   ├── security.tf
-│   ├── bastion.tf
-│   ├── vms.tf
-│   ├── extensions.tf
-│   ├── outputs.tf
-│   ├── .terraform.lock.hcl
-│   └── scripts/
-│       ├── windows-setup.ps1
-│       ├── ubuntu-setup.sh
-│       └── kali-setup.sh
-└── gcp/
-```
-
 ## Troubleshooting
 
 **terraform plan prompts for a variable.** A required variable has no value. Check that `terraform.tfvars` exists and is filled in.
@@ -237,7 +204,6 @@ $env:TF_LOG = ""
 
 ## Roadmap
 
-- [ ] GCP deployment (Identity-Aware Proxy, service accounts, VPC firewall rules)
 - [ ] Remote state backend with locking
 - [ ] Egress filtering exercise
 - [ ] Pinned image versions for reproducible builds
@@ -246,4 +212,4 @@ $env:TF_LOG = ""
 
 ## License
 
-MIT. 
+MIT.  

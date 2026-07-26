@@ -5,7 +5,7 @@ variable "subscription_id" {
 variable "location" {
   description = "The Azure region fo all resources."
   type        = string
-  default     = "eastus2"
+  default     = "centralus"
 }
 variable "project_name" {
   description = "Short name used as a prefix when naming resouces."
