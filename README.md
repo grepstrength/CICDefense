@@ -2,8 +2,6 @@
 
 # CI/CDefense
 
-*STILL IN ACTIVE DEVELOPMENT*
-
 **Practice software supply chain security with CI/CDefense!**
 
 Build your own Terraform lab for CI/CD pipeline and software supply chain security testing.
