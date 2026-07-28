@@ -15,7 +15,7 @@ output "vm_private_ips" {
   value = {
     windows = azurerm_network_interface.vm["windows"].private_ip_address
     ubuntu  = azurerm_network_interface.vm["ubuntu"].private_ip_address
-    kali    = azurerm_network_interface.vm["kali"].private_ip_address
+    kali    = azurerm_network_interface.vm["notkali"].private_ip_address
   }
 }
 output "connection_hint" {

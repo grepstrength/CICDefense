@@ -1,5 +1,5 @@
 resource "azurerm_network_interface" "vm" {
-  for_each = toset(["windows", "kali", "ubuntu"])
+  for_each = toset(["windows", "notkali", "ubuntu"])
 
   name                = "${var.project_name}-${each.key}-nic"
   location            = azurerm_resource_group.main.location
@@ -28,6 +28,7 @@ resource "azurerm_windows_virtual_machine" "windows" {
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "StandardSSD_LRS"
+    disk_size_gb         = 128
   }
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
@@ -53,6 +54,7 @@ resource "azurerm_linux_virtual_machine" "ubuntu" {
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "StandardSSD_LRS"
+    disk_size_gb         = 64
   }
   source_image_reference {
     publisher = "Canonical"
@@ -62,15 +64,9 @@ resource "azurerm_linux_virtual_machine" "ubuntu" {
   }
 }
 
-resource "azurerm_marketplace_agreement" "kali" {
-  publisher = "kali-linux"
-  offer     = "kali-linux"
-  plan      = "kali"
-}
-
-resource "azurerm_linux_virtual_machine" "kali" {
-  name                            = "${var.project_name}-kali"
-  computer_name                   = "kali-dast"
+resource "azurerm_linux_virtual_machine" "notkali" {
+  name                            = "${var.project_name}-notkali"
+  computer_name                   = "notkali-dast"
   resource_group_name             = azurerm_resource_group.main.name
   location                        = azurerm_resource_group.main.location
   size                            = var.vm_size
@@ -78,23 +74,18 @@ resource "azurerm_linux_virtual_machine" "kali" {
   admin_password                  = var.admin_password
   tags                            = var.tags
   disable_password_authentication = false
-  network_interface_ids = [azurerm_network_interface.vm["kali"].id
+  network_interface_ids = [
+    azurerm_network_interface.vm["notkali"].id
   ]
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "StandardSSD_LRS"
+    disk_size_gb         = 64
   }
   source_image_reference {
-    publisher = "kali-linux"
-    offer     = "kali-linux"
-    sku       = "kali"
+    publisher = "Canonical"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "server"
     version   = "latest"
   }
-  plan {
-    name      = "kali"
-    product   = "kali-linux"
-    publisher = "kali-linux"
-  }
-  depends_on = [azurerm_marketplace_agreement.kali] // this is an explicit dependency 
-  // use implicit dependencies whenever possible, but readh for depends_on when a real dependency exists that Terraform can't infer 
 }

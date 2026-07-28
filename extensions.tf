@@ -45,9 +45,9 @@ resource "azurerm_virtual_machine_extension" "ubuntu" {
   }
 }
 
-resource "azurerm_virtual_machine_extension" "kali" {
+resource "azurerm_virtual_machine_extension" "notkali" {
   name                       = "install-tooling"
-  virtual_machine_id         = azurerm_linux_virtual_machine.kali.id
+  virtual_machine_id         = azurerm_linux_virtual_machine.notkali.id
   publisher                  = "Microsoft.Azure.Extensions"
   type                       = "CustomScript"
   type_handler_version       = "2.1"
@@ -56,7 +56,7 @@ resource "azurerm_virtual_machine_extension" "kali" {
 
   protected_settings = jsonencode({
     script = base64encode(
-      templatefile("${path.module}/scripts/kali-setup.sh", {
+      templatefile("${path.module}/scripts/notkali-setup.sh", {
         admin_username = var.admin_username
       })
     )

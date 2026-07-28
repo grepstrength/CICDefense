@@ -28,7 +28,7 @@ variable "admin_username" {
   default     = "labmin"
   validation {
     condition = !contains(
-      ["admin", "administratr", "root", "guest", "user", "test"],
+      ["admin", "administrator", "root", "guest", "user", "test"],
       lower(var.admin_username)
     )
     error_message = "Azure reserves certain usernames. Choose something other than admin, administrator, root, guest, user, or test."
@@ -47,5 +47,5 @@ variable "admin_password" {
 variable "vm_size" {
   description = "Azure VM size for lab machines. B-series are burstable and cheaper."
   type        = string
-  default     = "Standard_B2ms"
+  default     = "Standard_D2s_v5"
 }
