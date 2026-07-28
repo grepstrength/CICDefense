@@ -41,7 +41,7 @@ curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scr
     | sh -s -- -b /usr/local/bin || true
 # gitleaks (release binary)
 GITLEAKS_VER="8.18.4"
-wget -q "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VER}/gitleaks_${GITLEAKS_VER}_linux_x64.tar.gz" -O /tmp/gitleaks.tar.gz \
+wget -q "https://github.com/gitleaks/gitleaks/releases/download/v$${GITLEAKS_VER}/gitleaks_$${GITLEAKS_VER}_linux_x64.tar.gz" -O /tmp/gitleaks.tar.gz \
     && tar -xzf /tmp/gitleaks.tar.gz -C /usr/local/bin gitleaks || true
 
 # --- Traffic ---

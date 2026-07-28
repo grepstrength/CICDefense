@@ -63,6 +63,6 @@ resource "azurerm_virtual_machine_extension" "notkali" {
   })
 
   timeouts {
-    create = "60m"
+    create = "90m" // 90 minute timeout because notkali installs heavy... 15 offensive tools are installed inline w/o backgrounding
   }
 }

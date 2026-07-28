@@ -6,21 +6,23 @@
 
 ‼️ *NOTE: THIS IS STILL IN ACTIVE DEVELOPMENT!!!*
 
-Build your own Terraform lab for CI/CD pipeline and software supply chain security testing.
+If you've looked at a cybersecurity bulletin in the last few years, you'd know the software supply chain has been under steady attack for quite some time. Since I feel like it's imperative to learn how to defend your own CI/CD pipeline, I started this project. 
+
+With this, you can build your own Azure lab for CI/CD pipeline and software supply chain security testing.
 
 ## Lab Architecture
 
-Three VMs on a private network, reachable only through a managed jump host. No VM has a public IP.
+This has three VMs on a private network, reachable only through a managed jump host. No VM has a public IP.
 
-- **Ubuntu (latest LTS)** — primary CI runner, equivalent to a self-hosted GitLab Runner or GitHub Actions runner
-- **Windows Server 2022 Datacenter** — secondary runner for Windows binaries and .NET builds
-- **notkali** — Ubuntu-based adversary and DAST node, loaded with offensive tooling for simulating supply chain attacks and scanning for exposed secrets
+- **Ubuntu (latest LTS)**: primary CI runner, equivalent to a self-hosted GitLab Runner or GitHub Actions runner
+- **Windows Server 2022 Datacenter**: secondary runner for Windows binaries and .NET builds
+- **notkali**: Ubuntu-based adversary and DAST node, loaded with offensive tooling for simulating supply chain attacks and scanning for exposed secrets
 
 Network posture:
 
 - VMs can reach each other
 - VMs can reach the internet (egress allowed for package and model pulls)
-- Nothing on the internet can reach the VMs
+- Nothing on the internet can reach the VMs (no ingress)
 - Operator access is via Azure Bastion
 
 ## What Gets Built
@@ -41,7 +43,15 @@ Azure (17 resources):
 - An Azure subscription with billing enabled
 - Git
 
-Optional but recommended: VS Code with the HashiCorp Terraform extension.
+### Optional but recommended
+
+**Note:** These will have to be manually created/configured.
+
+- VS Code with the HashiCorp Terraform extension
+- Multiple dummy accounts
+  - GitHub
+  - Azure
+  - CircleCI
 
 ## Quick Start
 
@@ -108,22 +118,29 @@ Do this at the end of every session.
 
 Provisioning scripts live in `scripts/` and run automatically via VM extensions.
 
+On the Ubuntu runner, heavier toolchains and scanners install in the background after first boot via a systemd one-shot unit, so the deployment finishes quickly. If a tool isn't present immediately after you connect, it's still installing; check `/var/log/cicdefense-detection-install.log`.
+
 All nodes:
 
 - git
 - VS Code
 - Ollama
 
-Windows Server 2022 (installed via direct download, no package manager):
-
-- git
-- VS Code
-- Ollama
-- IE Enhanced Security Configuration disabled
-
-Ubuntu (CI runner):
+Ubuntu (primary CI runner):
 
 - XFCE desktop and xrdp
+- Build toolchains: build-essential (gcc/g++/make), Python (pip, venv)
+- Backgrounded toolchains: Docker CE, Node.js/npm, JDK + Maven, .NET SDK 8.0, Go, Rust
+- Detection: auditd (with ruleset), osquery, Wireshark, mitmproxy
+- SBOM and vulnerability scanning: Syft, Grype, Trivy
+
+Windows Server 2022 (secondary runner for Windows-specific test cases, installed via direct download, no package manager):
+
+- git, VS Code, Ollama
+- .NET SDK 8.0, Node.js
+- Detection: Sysmon (with SwiftOnSecurity config), Procmon, Autoruns, Regshot
+- IE Enhanced Security Configuration disabled
+- C++ build tools (MSVC) are NOT provisioned — the Visual Studio Build Tools install is large and slow. Install manually if needed: `winget install Microsoft.VisualStudio.2022.BuildTools`
 
 notkali (adversary / DAST node):
 
@@ -132,7 +149,7 @@ notkali (adversary / DAST node):
 - Web app testing: sqlmap, nikto, gobuster, ffuf, wfuzz, OWASP ZAP
 - Secrets scanning: trufflehog, gitleaks
 - Traffic: Wireshark, mitmproxy
-- Burp Suite Community is downloaded to the Downloads folder but not installed; install it yourself if you want it
+- Burp Suite Community is downloaded to the Downloads folder but not installed. You'll have to install it yourself if you want it
 
 ### Language models
 
@@ -142,6 +159,8 @@ Ollama is installed but models are not pulled during provisioning, since the dow
 ollama pull gemma4:e4b
 ollama pull R4C3R/minicpm5-1b-fable5-heretic
 ```
+
+I chose these because they fit my intended use case, but of course you can choose whatever you want for this lab.
 
 The default `Standard_D2s_v5` size (2 vCPU, 8 GB RAM) runs small models comfortably. Bump `vm_size` in `terraform.tfvars` for more headroom.
 
@@ -201,6 +220,10 @@ az vm image list --publisher <publisher> --offer <offer> --location centralus --
 
 **Blank grey screen after RDP to a Linux VM.** The `.xsession` file is missing or has the wrong owner. Check that the setup script wrote it for the correct user.
 
+**templatefile error: "vars map does not contain key ...".** A provisioning script uses a bash variable with brace syntax (`${VAR}`), which collides with Terraform's `templatefile()` interpolation. Escape it as `$${VAR}` so Terraform passes it through to bash. Only `${admin_username}` should remain single-dollar (that one is meant to be injected by Terraform).
+
+**OWASP ZAP missing on notkali.** ZAP installs via snap, and snapd is sometimes not ready during first-boot provisioning, so the install can silently fail (it's non-fatal by design). If ZAP isn't present, re-run `sudo snap install zaproxy --classic` after connecting.
+
 **Nothing else works.** Turn on debug logging:
 
 ```powershell
@@ -211,11 +234,12 @@ $env:TF_LOG = ""
 
 ## Roadmap
 
-- [ ] Detection and logging layer (in progress): Sysmon on Windows, auditd and osquery on the runners, SBOM and vuln scanning with Syft, Grype, and Trivy
+- [x] Detection and logging layer: Sysmon on Windows; auditd and osquery on the runners; SBOM and vulnerability scanning with Syft, Grype, and Trivy
+- [ ] Seeded vulnerable pipeline for attack scenarios (this is where the CircleCI/GitHub dummy accounts come in)
 - [ ] Remote state backend with locking
 - [ ] Egress filtering exercise
 - [ ] Pinned image versions for reproducible builds
-- [ ] Seeded vulnerable pipeline for attack scenarios
+- [ ] Central log aggregation so detection events from all three VMs land in one place
 
 ## License
 
