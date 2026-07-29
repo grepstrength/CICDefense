@@ -1,4 +1,4 @@
-![CI/CDefense](cicdefense-updated.png)
+![alt text](cicdefense-new.png)
 
 # CI/CDefense
 
@@ -23,18 +23,18 @@ Network posture:
 - VMs can reach each other
 - VMs can reach the internet (egress allowed for package and model pulls)
 - Nothing on the internet can reach the VMs (no ingress)
-- Operator access is via Azure Bastion
+- Operator access is via Azure Bastion (**Note:** Standard SKU is an *intentionl* choice. This is required if you want to be able to directly connect to the Linux hosts via RDP in the Azure portal!)
 
 ## What Gets Built
 
-Azure (18 resources):
+Azure (17 resources):
 
 - Resource group, virtual network, workload subnet, AzureBastionSubnet
 - Network security group with least-privilege rules, plus subnet association
 - Azure Bastion host and its static public IP
 - 3 network interfaces, no public IPs
 - 3 virtual machines (all Ubuntu 24.04 except the Windows runner)
-- 4 VM extensions that install desktops and tooling (Windows uses two)
+- 3 VM extensions that install desktops and tooling
 
 ## Prerequisites
 
@@ -52,6 +52,28 @@ Azure (18 resources):
   - GitHub
   - Azure
   - CircleCI
+
+## Validated Lab
+
+### notkali (adversary / DAST node)
+
+![notkali validated](screenshots/notkali-validated.png)
+
+Confirms: `labmin` login, `notkali-dast` hostname, private IP `10.0.2.6` (no public IP), XFCE desktop over Bastion (RDP), ZAP installed, and the offensive toolchain resolving on PATH (nmap, sqlmap, nikto, gobuster, ffuf, trufflehog, gitleaks, amass).
+
+### Ubuntu (CI runner)
+
+![ubuntu validated](screenshots/ubuntu-validated.png)
+
+Confirms: `ubuntu-runner`, private IP `10.0.2.4`, XFCE desktop over Bastion (RDP). The backgrounded systemd install completed — Docker (note the running `docker0` bridge), Syft, Grype, Trivy, .NET, Go, Rust, and osquery all resolve on PATH, proving the deferred-install pattern works.
+
+
+### Windows (secondary runner)
+
+![windows validated](screenshots/windows-validated.png)
+
+Confirms: `win-runner`, private IP `10.0.2.5`, and Sysmon actively logging Process Create (Event ID 1) events to the Operational log via the SwiftOnSecurity config.
+
 
 ## Quick Start
 
@@ -104,7 +126,40 @@ terraform output
 
 In the Azure Portal, go to the resource group, select a VM, then Connect, then Bastion. Sign in with your admin username and password.
 
-All three VMs accept RDP. xrdp is installed on the Linux nodes so they present a graphical desktop rather than a bare shell.
+All three VMs accept RDP. xrdp is installed on the Linux nodes so they present a graphical desktop rather than a bare shell. For Linux VMs, in the Bastion Connect pane select Protocol: RDP, port 3389 (enabled by the Standard SKU). Native-client tunneling via az network bastion tunnel + mstsc also works.
+
+### Connecting via the native RDP client (PowerShell tunnel)
+
+The Bastion Connect pane in the portal works for both Windows (RDP) and Linux (RDP via the Standard SKU protocol option). If you'd rather use a local RDP client — for clipboard sharing, file transfer, or multi-monitor — open a Bastion tunnel from PowerShell and connect through it.
+
+Requires the Bastion **Standard** SKU with `tunneling_enabled = true` (both are
+set in `bastion.tf`).
+
+Open a tunnel to a VM. Leave this window running — it holds the tunnel open:
+
+```powershell
+az network bastion tunnel `
+  --name cicdefense-bastion `
+  --resource-group cicdefense-rg `
+  --target-resource-id "<VM_RESOURCE_ID>" `
+  --resource-port 3389 `
+  --port 13389
+```
+
+Get the VM's resource ID with:
+
+```powershell
+az vm show --resource-group cicdefense-rg --name cicdefense-ubuntu --query id --output tsv
+```
+
+Then, in a second window, launch Remote Desktop against the local tunnel port:
+
+```powershell
+mstsc /v:localhost:13389
+```
+
+Log in with your `admin_username` and `admin_password`. For a second VM, open another
+tunnel on a different local port (e.g. `--port 13390`) so both can run at once.
 
 ### 5. Teardown
 
@@ -168,10 +223,10 @@ The default `Standard_D2s_v5` size (2 vCPU, 8 GB RAM) runs small models comforta
 
 This lab bills by the hour. Destroy it when you are not using it for your sanity.
 
-Roughly 0.55 to 0.65 USD per hour in centralus, broken down as:
+Roughly $0.55 to $0.65 USD per hour in centralus, broken down as:
 
 - 3 D2s_v5 VMs, about $0.29 each region-dependent
-- Azure Bastion Basic SKU, about $0.19
+- Azure Bastion Standard SKU, about $0.29
 - OS disks (64 GB StandardSSD on the Linux nodes), a few cents per hour
 - Static public IP, about $0.005
 
@@ -191,6 +246,7 @@ A four-hour session costs a few dollars. A forgotten week costs around $100 USD.
 
 Please keep in mind that this is a lab. I deliberately chose convenience over hardening for several things:
 
+- The Windows provisioning script is fetched from a public GitHub raw URL (raw.githubusercontent.com/.../win-setup.ps1) at deploy time and executed. It's pinned to a branch, not a commit, so the same config can pull a different script over time. This is literally a live example of the remote-fetch supply-chain risk this lab studies.
 - Password authentication is enabled on the Linux VMs. SSH keys are the commonly accepted security practice. This is defensible only because the VMs have no public IP and are reachable solely through Bastion. To switch, replace `disable_password_authentication = false` with an `admin_ssh_key` block.
 - Terraform state contains secrets in plaintext. Marking a variable sensitive only redacts it from console output. State files are gitignored, but a production setup would use a remote backend with encryption at rest and state locking.
 - Provisioning scripts use curl piped to shell. The Ollama installer executes a remote script unreviewed. This is the standard install path and TBH, a live example of the type of thing this lab is meant to study, among other configurations in this section.
@@ -216,6 +272,10 @@ Never commit `terraform.tfvars` or `.tfstate` files. Both are gitignored at the 
 az vm image list --publisher <publisher> --offer <offer> --location centralus --all --output table
 ```
 
+**Bastion Connect pane only shows SSH for a Linux VM.** The RDP protocol option requires the Bastion **Standard** SKU (or higher). On the Basic SKU, the portal only offers SSH for Linux VMs, so you get a terminal instead of the XFCE desktop. Set `sku = "Standard"` on the `azurerm_bastion_host` resource and re-apply. The SKU can be upgraded in place (no rebuild).
+
+**`az network bastion tunnel` fails: "Bastion Host SKU must be Standard or Premium and Native Client must be enabled."** Same root cause as above. Native-client tunneling needs the Standard (or Premium) SKU **and** `tunneling_enabled = true` on the `azurerm_bastion_host` resource. Set both and re-apply, then re-run the tunnel command.
+
 **Extension fails with "VM has reported a failure".** Terraform cannot see inside the script. Connect via Bastion and read the logs. On Linux, `/var/log/azure/custom-script/handler.log`. On Windows, read stderr under `C:\Packages\Plugins\Microsoft.Compute.CustomScriptExtension\*\Downloads\`.
 
 **Blank grey screen after RDP to a Linux VM.** The `.xsession` file is missing or has the wrong owner. Check that the setup script wrote it for the correct user.
@@ -223,6 +283,8 @@ az vm image list --publisher <publisher> --offer <offer> --location centralus --
 **templatefile error: "vars map does not contain key ...".** A provisioning script uses a bash variable with brace syntax (`${VAR}`), which collides with Terraform's `templatefile()` interpolation. Escape it as `$${VAR}` so Terraform passes it through to bash. Only `${admin_username}` should remain single-dollar (that one is meant to be injected by Terraform).
 
 **OWASP ZAP missing on notkali.** ZAP installs via snap, and snapd is sometimes not ready during first-boot provisioning, so the install can silently fail (it's non-fatal by design). If ZAP isn't present, re-run `sudo snap install zaproxy --classic` after connecting.
+
+**Windows extension fails with a 404 / "failed to download the blob".** The Windows extension fetches `scripts/win-setup.ps1` from the public GitHub raw URL at deploy time. If you edited the script but didn't push, or the filename in `extensions.tf` (`fileUris` + `-File`) doesn't match the actual file, the download 404s. Confirm the raw URL resolves in a browser before applying, and make sure the file, the `fileUris` URL, and the `commandToExecute -File` argument all say `win-setup.ps1`.
 
 **Nothing else works.** Turn on debug logging:
 
