@@ -9,9 +9,9 @@ resource "azurerm_virtual_machine_extension" "windows" {
 
   settings = jsonencode({
     fileUris = [
-      "https://raw.githubusercontent.com/grepstrength/CICDefense/main/scripts/windows-setup.ps1"
+      "https://raw.githubusercontent.com/grepstrength/CICDefense/main/scripts/win-setup.ps1"
     ]
-    commandToExecute = "powershell -ExecutionPolicy Unrestricted -File windows-setup.ps1"
+    commandToExecute = "powershell -ExecutionPolicy Unrestricted -File win-setup.ps1"
   })
 
   timeouts {
