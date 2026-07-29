@@ -4,7 +4,7 @@
 
 **Practice software supply chain security with CI/CDefense!**
 
-‼️ *NOTE: THIS IS STILL IN ACTIVE DEVELOPMENT!!!*
+‼️ *NOTE: TESTED AND VALIDATED!!!*
 
 If you've looked at a cybersecurity bulletin in the last few years, you'd know the software supply chain has been under steady attack for quite some time. Since I feel like it's imperative to learn how to defend your own CI/CD pipeline, I started this project. 
 
@@ -23,7 +23,7 @@ Network posture:
 - VMs can reach each other
 - VMs can reach the internet (egress allowed for package and model pulls)
 - Nothing on the internet can reach the VMs (no ingress)
-- Operator access is via Azure Bastion (**Note:** Standard SKU is an *intentionl* choice. This is required if you want to be able to directly connect to the Linux hosts via RDP in the Azure portal!)
+- Operator access is via Azure Bastion (**Note:** Standard SKU is an *intentional* choice. This is required if you want to be able to directly connect to the Linux hosts via RDP in the Azure portal!)
 
 ## What Gets Built
 
@@ -225,7 +225,7 @@ This lab bills by the hour. Destroy it when you are not using it for your sanity
 
 Roughly $0.55 to $0.65 USD per hour in centralus, broken down as:
 
-- 3 D2s_v5 VMs, about $0.29 each region-dependent
+- 3 D2s_v5 VMs, about $0.10/hr each region-dependent
 - Azure Bastion Standard SKU, about $0.29
 - OS disks (64 GB StandardSSD on the Linux nodes), a few cents per hour
 - Static public IP, about $0.005
