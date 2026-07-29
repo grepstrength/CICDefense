@@ -303,4 +303,4 @@ $env:TF_LOG = ""
 
 ## License
 
-MIT.
+Free-for-all, aka MIT.
