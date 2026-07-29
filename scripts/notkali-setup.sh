@@ -23,10 +23,11 @@ apt-get update
 apt-get install -y code
 
 # --- Recon / OSINT (apt) ---
-apt-get install -y nmap masscan dnsrecon amass whatweb
+apt-get install -y nmap masscan dnsrecon whatweb || true
+snap install amass || true
 
 # --- Web app testing (apt) ---
-apt-get install -y nikto gobuster ffuf wfuzz
+apt-get install -y nikto gobuster ffuf wfuzz || true
 
 # --- Python-based tools via pipx ---
 apt-get install -y python3-venv pipx

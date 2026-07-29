@@ -27,14 +27,14 @@ Network posture:
 
 ## What Gets Built
 
-Azure (17 resources):
+Azure (18 resources):
 
 - Resource group, virtual network, workload subnet, AzureBastionSubnet
 - Network security group with least-privilege rules, plus subnet association
 - Azure Bastion host and its static public IP
 - 3 network interfaces, no public IPs
 - 3 virtual machines (all Ubuntu 24.04 except the Windows runner)
-- 3 VM extensions that install desktops and tooling
+- 4 VM extensions that install desktops and tooling (Windows uses two)
 
 ## Prerequisites
 
@@ -106,7 +106,7 @@ In the Azure Portal, go to the resource group, select a VM, then Connect, then B
 
 All three VMs accept RDP. xrdp is installed on the Linux nodes so they present a graphical desktop rather than a bare shell.
 
-### 5. Tear down
+### 5. Teardown
 
 ```powershell
 terraform destroy
@@ -145,7 +145,7 @@ Windows Server 2022 (secondary runner for Windows-specific test cases, installed
 notkali (adversary / DAST node):
 
 - XFCE desktop and xrdp
-- Recon and OSINT: nmap, masscan, dnsrecon, amass, whatweb, theHarvester
+- Recon and OSINT: nmap, masscan, dnsrecon, amass (via snap), whatweb, theHarvester
 - Web app testing: sqlmap, nikto, gobuster, ffuf, wfuzz, OWASP ZAP
 - Secrets scanning: trufflehog, gitleaks
 - Traffic: Wireshark, mitmproxy
