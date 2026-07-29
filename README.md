@@ -4,8 +4,6 @@
 
 **Practice software supply chain security with CI/CDefense!**
 
-‼️ *NOTE: TESTED AND VALIDATED!!!*
-
 If you've looked at a cybersecurity bulletin in the last few years, you'd know the software supply chain has been under steady attack for quite some time. Since I feel like it's imperative to learn how to defend your own CI/CD pipeline, I started this project. 
 
 With this, you can build your own Azure lab for CI/CD pipeline and software supply chain security testing.
