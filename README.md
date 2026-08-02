@@ -51,6 +51,30 @@ Azure (17 resources):
   - Azure
   - CircleCI
 
+## Detection & Tooling Overview
+
+The lab's defensive capability is organized in layers — the same layers the
+supply-chain validation exercise exercises.
+
+**Composition / SBOM analysis** — what's actually in a build
+- Syft (SBOM generation), Grype (CVE scan), Trivy (vuln + secret scan)
+
+**Behavioral package scanning** — novel/suspicious dependencies
+- Socket CLI, npm audit
+
+**Host telemetry** — process, file, and identity events
+- Ubuntu: auditd (execve + identity rules), osquery
+- Windows: Sysmon (SwiftOnSecurity config)
+
+**Network visibility** — what the runner talks to
+- Wireshark / tshark, mitmproxy
+
+**Build toolchains** (the attack surface being defended)
+- Docker, Node/npm, Python, Go, Rust, JDK/Maven, .NET
+
+**Offensive tooling** (notkali adversary node)
+- nmap, sqlmap, nikto, gobuster, ffuf, wfuzz, ZAP, trufflehog, gitleaks, amass, theHarvester
+
 ## Validated Lab
 
 ### notkali (adversary / DAST node)
@@ -71,7 +95,6 @@ Confirms: `ubuntu-runner`, private IP `10.0.2.4`, XFCE desktop over Bastion (RDP
 ![windows validated](screenshots/windows-validated.png)
 
 Confirms: `win-runner`, private IP `10.0.2.5`, and Sysmon actively logging Process Create (Event ID 1) events to the Operational log via the SwiftOnSecurity config.
-
 
 ## Quick Start
 

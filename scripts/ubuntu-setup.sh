@@ -90,6 +90,7 @@ usermod -aG docker "$ADMIN_USER"
 # --- Node.js LTS + npm ---
 curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
 apt-get install -y nodejs
+npm install -g @socketsecurity/cli || echo "socket cli install failed, continuing"
 
 # --- Java JDK + Maven ---
 apt-get install -y default-jdk maven
