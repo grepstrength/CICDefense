@@ -54,6 +54,9 @@ apt-get install -y mitmproxy
 apt-get install -y snapd
 snap install zaproxy --classic || true
 
+# --- Chromium (snap, same mechanism as ZAP) ---
+snap install chromium || true
+
 # --- Burp Community (downloaded, NOT installed) ---
 BURP_DIR="/home/${admin_username}/Downloads"
 mkdir -p "$BURP_DIR"

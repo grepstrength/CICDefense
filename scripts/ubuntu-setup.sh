@@ -25,6 +25,10 @@ https://packages.microsoft.com/repos/code stable main" \
 apt-get update
 apt-get install -y code
 
+# --- Chromium browser ---
+apt-get install -y chromium-browser
+apt-get install -y firefox
+
 # --- Ollama ---
 curl -fsSL https://ollama.com/install.sh | sh
 
