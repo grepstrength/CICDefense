@@ -77,6 +77,14 @@ supply-chain validation exercise exercises.
 
 ## Validated Lab
 
+To see the lab in use: 
+- **Blog post:** [If at first you don't succeed...](https://grepstrength.dev/if-at-first-you-dont-succeed-how-to-find-bad-in-the-software-supply-chain-692a2a1d2ab6)
+  - Validates the lab against White Knight Labs' ASCPC example malicious npm package and my own custom package, greppy-npm-test.
+- **Test artifact:** [greppy-npm-test](https://github.com/grepstrength/greppy-npm-test)
+  - The benign/malicious npm package pair used in the writeup.
+
+For just the infrastructure and tooling installation, please see below: 
+
 ### notkali (adversary / DAST node)
 
 ![notkali validated](screenshots/notkali-validated.png)
