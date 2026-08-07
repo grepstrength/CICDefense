@@ -1,3 +1,6 @@
+# NOTE: the non-privileged 'nottavictim' account is NOT created within this script.
+# nottavictim's password is injected via Terraform in the extension's inline command, so it never shows up in this script... in publi.
+
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"  # speeds up Invoke-WebRequest massively
 

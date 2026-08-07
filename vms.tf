@@ -89,3 +89,60 @@ resource "azurerm_linux_virtual_machine" "notkali" {
     version   = "latest"
   }
 }
+
+resource "azurerm_marketplace_agreement" "kali" {
+  count = var.enable_kali ? 1 : 0 // conditional expression that depends on enable_kali being true in (variables.tf) to create the VM, if false, the value is 0 and nothing gets built
+
+  publisher = "kali-linux"
+  offer     = "kali-linux"
+  plan      = "kali"
+}
+
+resource "azurerm_network_interface" "kali" {
+  count = var.enable_kali ? 1 : 0
+
+  name                = "${var.project_name}-kali-nic"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  tags                = var.tags
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.workload.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+resource "azurerm_linux_virtual_machine" "kali" {
+  count = var.enable_kali ? 1 : 0 // Again, only enabled when enable_kali = true
+
+  name                            = "${var.project_name}-kali"
+  computer_name                   = "kali"
+  resource_group_name             = azurerm_resource_group.main.name
+  location                        = azurerm_resource_group.main.location
+  size                            = var.vm_size
+  admin_username                  = var.admin_username
+  admin_password                  = var.admin_password
+  tags                            = var.tags
+  disable_password_authentication = false
+  network_interface_ids = [
+    azurerm_network_interface.kali[0].id
+  ]
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "StandardSSD_LRS"
+    disk_size_gb         = 64
+  }
+  source_image_reference {
+    publisher = "kali-linux"
+    offer     = "kali-linux"
+    sku       = "kali"
+    version   = "latest"
+  }
+  plan {
+    name      = "kali"
+    product   = "kali-linux"
+    publisher = "kali-linux"
+  }
+  depends_on = [azurerm_marketplace_agreement.kali]
+}

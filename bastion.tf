@@ -16,7 +16,7 @@ resource "azurerm_bastion_host" "main" {
   resource_group_name = azurerm_resource_group.main.name
   sku                 = "Standard"
   tags                = var.tags
-  tunneling_enabled = true
+  tunneling_enabled   = true
 
   ip_configuration {
     name                 = "configuration"

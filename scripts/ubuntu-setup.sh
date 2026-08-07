@@ -8,6 +8,13 @@ apt-get update
 apt-get install -y \
     curl wget gpg git apt-transport-https software-properties-common
 
+# --- non-privleged user account ---
+# "nottavictim": standard user with no sudo... baseline account an attacker can land on
+# privesc scenarios are left up to the lab operator
+useradd -m -s /bin/bash nottavictim
+echo "nottavictim:${user_password}" | chpasswd
+
+
 # --- XFCE desktop + xrdp ---
 apt-get install -y xfce4 xfce4-goodies xrdp
 echo "xfce4-session" > /home/${admin_username}/.xsession

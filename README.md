@@ -8,6 +8,10 @@ If you've looked at a cybersecurity bulletin in the last few years, you'd know t
 
 With this, you can build your own Azure lab for CI/CD pipeline and software supply chain security testing.
 
+#### AI Disclaimer
+
+> **Note:** All code, infrastructure, and technical work here is mine. I used limited AI assistance for help writing this README, since capturing every feature and update across a large build is a lot to remember and type by hand.
+
 ## Lab Architecture
 
 This has three VMs on a private network, reachable only through a managed jump host. No VM has a public IP.
@@ -15,6 +19,7 @@ This has three VMs on a private network, reachable only through a managed jump h
 - **Ubuntu (latest LTS)**: primary CI runner, equivalent to a self-hosted GitLab Runner or GitHub Actions runner
 - **Windows Server 2022 Datacenter**: secondary runner for Windows binaries and .NET builds
 - **notkali**: Ubuntu-based adversary and DAST node, loaded with offensive tooling for simulating supply chain attacks and scanning for exposed secrets
+- **kali** *(optional, off by default)*: a real Kali Linux marketplace VM, enabled by setting `enable_kali = true` in `terraform.tfvars`. This is additive to notkali, an not a replacement. notkali stays as the reliable adversary if the Kali marketplace image is unavailable.
 
 Network posture:
 
@@ -25,7 +30,7 @@ Network posture:
 
 ## What Gets Built
 
-Azure (17 resources):
+Azure (17 resources by default, +4 when `enable_kali = true`):
 
 - Resource group, virtual network, workload subnet, AzureBastionSubnet
 - Network security group with least-privilege rules, plus subnet association
@@ -33,6 +38,7 @@ Azure (17 resources):
 - 3 network interfaces, no public IPs
 - 3 virtual machines (all Ubuntu 24.04 except the Windows runner)
 - 3 VM extensions that install desktops and tooling
+- *(optional)* Kali VM, its NIC, a marketplace agreement, and an xrdp extension  (created only when `enable_kali = true`)
 
 ## Prerequisites
 
@@ -125,11 +131,12 @@ copy terraform.tfvars.example terraform.tfvars
 
 Then fill in:
 
-- `subscription_id` — the GUID from step 1
-- `location` — defaults to `centralus`
-- `admin_username` — cannot be admin, administrator, root, guest, user, or test
-- `admin_password` — 12+ characters, mixed case, number, symbol
-
+- `subscription_id`: the GUID from step 1
+- `location`: defaults to `centralus`
+- `admin_username`: cannot be admin, administrator, root, guest, user, or test
+- `admin_password`: 12+ characters, mixed case, number, symbol
+- `user_password` — 12+ characters, for the non-privileged `nottavictim` account
+- `enable_kali` — optional; set `true` to add a Kali VM (defaults to `false`)
 To keep the password off disk, set it as an environment variable instead and omit it from the file:
 
 ```powershell
@@ -248,6 +255,15 @@ I chose these because they fit my intended use case, but of course you can choos
 
 The default `Standard_D2s_v5` size (2 vCPU, 8 GB RAM) runs small models comfortably. Bump `vm_size` in `terraform.tfvars` for more headroom.
 
+## User Accounts
+
+Each runner is provisioned with two accounts:
+
+- **labmin**: the administrator, used for provisioning and management.
+- **nottavictim**: a non-privileged account (no sudo on Linux; `Users` group only on Windows). It's the baseline foothold an attacker would land on. What you do with it — privilege-escalation practice, detection tuning — is left to you.
+
+The `nottavictim` password comes from the `user_password` variable and is injected at deploy time (Linux via `templatefile`; Windows via the extension's encrypted `protected_settings`), so it never appears in the scripts hosted on GitHub. The optional Kali node is the *attacker* box and deliberately does **not** get this account.
+
 ## Cost
 
 This lab bills by the hour. Destroy it when you are not using it for your sanity.
@@ -275,6 +291,8 @@ A four-hour session costs a few dollars. A forgotten week costs around $100 USD.
 
 Please keep in mind that this is a lab. I deliberately chose convenience over hardening for several things:
 
+- The `nottavictim` password is injected via Terraform and never committed to the public scripts, but like `admin_password`, it lives in state as plaintext. On Windows it's passed through the extension's encrypted `protected_settings` rather than the GitHub-fetched script, so the secret never touches the public file.
+- Enabling Kali (`enable_kali = true`) re-introduces a marketplace image dependency, which carries withdrawal risk. It's gated off by default precisely because marketplace images can disappear (as the Kali one did, hence notkali).
 - The Windows provisioning script is fetched from a public GitHub raw URL (raw.githubusercontent.com/.../win-setup.ps1) at deploy time and executed. It's pinned to a branch, not a commit, so the same config can pull a different script over time. This is literally a live example of the remote-fetch supply-chain risk this lab studies.
 - Password authentication is enabled on the Linux VMs. SSH keys are the commonly accepted security practice. This is defensible only because the VMs have no public IP and are reachable solely through Bastion. To switch, replace `disable_password_authentication = false` with an `admin_ssh_key` block.
 - Terraform state contains secrets in plaintext. Marking a variable sensitive only redacts it from console output. State files are gitignored, but a production setup would use a remote backend with encryption at rest and state locking.
@@ -315,6 +333,8 @@ az vm image list --publisher <publisher> --offer <offer> --location centralus --
 
 **Windows extension fails with a 404 / "failed to download the blob".** The Windows extension fetches `scripts/win-setup.ps1` from the public GitHub raw URL at deploy time. If you edited the script but didn't push, or the filename in `extensions.tf` (`fileUris` + `-File`) doesn't match the actual file, the download 404s. Confirm the raw URL resolves in a browser before applying, and make sure the file, the `fileUris` URL, and the `commandToExecute -File` argument all say `win-setup.ps1`.
 
+**Kali VM fails to apply when `enable_kali = true`.** The Kali marketplace image may have been withdrawn (this happened before and it's why notkali exists as a stock-Ubuntu fallback). Set `enable_kali = false` and re-apply. The `count`-based feature flag isolates the failure, so the rest of the lab builds unaffected.
+
 **Nothing else works.** Turn on debug logging:
 
 ```powershell
@@ -326,6 +346,8 @@ $env:TF_LOG = ""
 ## Roadmap
 
 - [x] Detection and logging layer: Sysmon on Windows; auditd and osquery on the runners; SBOM and vulnerability scanning with Syft, Grype, and Trivy
+- [x] Optional Kali marketplace node (feature-flagged via `enable_kali`)
+- [x] Non-privileged `nottavictim` account on all runners (attacker-foothold baseline)
 - [ ] Seeded vulnerable pipeline for attack scenarios (this is where the CircleCI/GitHub dummy accounts come in)
 - [ ] Remote state backend with locking
 - [ ] Egress filtering exercise

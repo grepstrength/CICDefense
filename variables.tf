@@ -49,3 +49,19 @@ variable "vm_size" {
   type        = string
   default     = "Standard_D2s_v5"
 }
+
+variable "enable_kali" {
+  description = "Set true to deploy an additional Kali VM. Note: This may fail if the image has been removed from the marketplace for some reason."
+  type        = bool
+  default     = false
+}
+
+variable "user_password" {
+  description = "The password for the non-privileged 'nottavictim' account on all lab VMs."
+  type        = string
+  sensitive   = true
+  validation {
+    condition     = length(var.user_password) >= 12
+    error_message = "Password must be at least 12 chars."
+  }
+}
