@@ -8,10 +8,6 @@ If you've looked at a cybersecurity bulletin in the last few years, you'd know t
 
 With this, you can build your own Azure lab for CI/CD pipeline and software supply chain security testing.
 
-#### AI Disclaimer
-
-> **Note:** All code, infrastructure, and technical work here is mine. I used limited AI assistance for help writing this README, since capturing every feature and update across a large build is a lot to remember and type by hand.
-
 ## Lab Architecture
 
 This has three VMs on a private network, reachable only through a managed jump host. No VM has a public IP.
@@ -162,7 +158,7 @@ terraform output
 
 In the Azure Portal, go to the resource group, select a VM, then Connect, then Bastion. Sign in with your admin username and password.
 
-All three VMs accept RDP. xrdp is installed on the Linux nodes so they present a graphical desktop rather than a bare shell. For Linux VMs, in the Bastion Connect pane select Protocol: RDP, port 3389 (enabled by the Standard SKU). Native-client tunneling via az network bastion tunnel + mstsc also works.
+All four VMs accept RDP. xrdp is installed on the Linux nodes so they present a graphical desktop rather than a bare shell. For Linux VMs, in the Bastion Connect pane select Protocol: RDP, port 3389 (enabled by the Standard SKU). Native-client tunneling via az network bastion tunnel + mstsc also works.
 
 ### Connecting via the native RDP client (PowerShell tunnel)
 

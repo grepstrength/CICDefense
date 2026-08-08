@@ -2,3 +2,4 @@
 subscription_id = "<your-azure-subscription-guid-here>"
 location        = "centralus"
 admin_password  = "<12+ chars, upper & lower case, number, speshul symbol>" // this is fine for a lab, but real CI/CD pipeline work should never commit a password in cleartext on disk 
+user_password  = "<12+ chars, upper & lower case, number, speshul symbol>" // this is fine for a lab, but real CI/CD pipeline work should never commit a password in cleartext on disk 
